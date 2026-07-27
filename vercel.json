@@ -4,13 +4,13 @@
     "frontend": {
       "root": "frontend/"
     },
-    "backend": {
-      "root": "backend/",
+    "agents": {
+      "root": "agents/",
       "entrypoint": "main:app"
     }
   },
   "rewrites": [
-    { "source": "/agents/(.*)", "destination": { "service": "backend" } },
+    { "source": "/agents/(.*)", "destination": { "service": "agents" } },
     { "source": "/(.*)", "destination": { "service": "frontend" } }
   ]
 }

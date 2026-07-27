@@ -203,7 +203,7 @@ A single repo, two independently-built services, wired together by a root
   /frontend             # Next.js app (pnpm)
     src/app/            # App Router
     src/components/
-  /backend               # FastAPI + LangGraph agent service (uv)
+  /agents               # FastAPI + LangGraph agent service (uv)
     main.py              # entrypoint: `app` (FastAPI instance)
     pyproject.toml
   /docs
@@ -215,10 +215,10 @@ A single repo, two independently-built services, wired together by a root
 {
   "services": {
     "frontend": { "root": "frontend/" },
-    "backend": { "root": "backend/", "entrypoint": "main:app" }
+    "agents": { "root": "agents/", "entrypoint": "main:app" }
   },
   "rewrites": [
-    { "source": "/agents/(.*)", "destination": { "service": "backend" } },
+    { "source": "/agents/(.*)", "destination": { "service": "agents" } },
     { "source": "/(.*)", "destination": { "service": "frontend" } }
   ]
 }
@@ -228,9 +228,9 @@ Requests to `/agents/*` (the contracts in
 [02-schema.md](02-schema.md)) route to the FastAPI service; everything else
 routes to Next.js. `vercel dev` runs both together locally. Locally outside
 of `vercel dev`, run them separately: `pnpm dev` in `/frontend`
-(port 3000) and `uv run uvicorn main:app --reload --port 8000` in `/backend`.
+(port 3000) and `uv run uvicorn main:app --reload --port 8000` in `/agents`.
 
-The backend exposes `GET /health` and `POST /agents/turn` (see
+The agent service exposes `GET /health` and `POST /agents/turn` (see
 [02-schema.md](02-schema.md) for the streaming contract), running the full
 graph described above — Supervisor, the shared `ToolNode` (on-demand
 note/source tools plus the `draft_with_rag`/`draft_with_web` delegation

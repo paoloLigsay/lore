@@ -205,7 +205,7 @@ data: {"message": "full assistant reply text", "proposal": null}
 
 `status` events are UI-only progress labels for whatever the graph is doing
 before the reply starts streaming. They come from two levels, both in
-[graph.py](../backend/graph.py) / [main.py](../backend/main.py):
+[graph.py](../agents/graph.py) / [main.py](../agents/main.py):
 
 - The Supervisor's own next move, read the instant its node finishes (via
   LangGraph's `"updates"` stream mode) — `"Reading your message..."`
