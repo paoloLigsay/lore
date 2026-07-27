@@ -1,0 +1,13 @@
+<svg version="1.2" xmlns="http://www.w3.org/2000/svg" viewBox="566 178 552 552" width="552" height="552">
+	<style>
+		.s0 { fill: #ffcc00 }
+		.s1 { fill: #ffffff }
+		.s2 { fill: #e8e7e2 }
+	</style>
+	<path id="Shape 6" fill-rule="evenodd" class="s0" d="m611 178h462c24.85 0 45 20.15 45 45v462c0 24.85-20.15 45-45 45h-462c-24.85 0-45-20.15-45-45v-462c0-24.85 20.15-45 45-45z"/>
+	<path id="Shape 1" class="s1" d="m662.67 268v255.53h110.34v-158.92c0 0-9.21-88.23-110.34-96.61z"/>
+	<path id="Shape 1 copy" class="s1" d="m1020.6 635.78l-249.2-0.77 0.33-113.14 154.98 0.48c0 0 86.02 9.71 93.89 113.43z"/>
+	<path id="Shape 4" class="s2" d="m773.27 521.87v113.62h31.96z"/>
+	<path id="Shape 5" class="s2" d="m662 521.7l110.47-0.09-109.01-32.08"/>
+	<path id="Shape 3" class="s1" d="m663.48 523.53l109.54 112.32v-112.32z"/>
+</svg>
