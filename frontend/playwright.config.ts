@@ -4,6 +4,7 @@ import { defineConfig } from "@playwright/test";
 export default defineConfig({
   testDir: "./e2e",
   fullyParallel: false,
+  reporter: [["html", { open: "never" }]],
   use: {
     baseURL: "http://localhost:3000",
     // Lore renders a desktop 3-panel layout and a mobile layout in the DOM

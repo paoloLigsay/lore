@@ -14,6 +14,14 @@ defaults:
   run:
     working-directory: frontend
 
+# This repo's postinstall (`prisma generate`) loads prisma.config.ts, which
+# needs DIRECT_URL to be resolvable — even for jobs that never touch a real
+# database, since Prisma's config loader throws if the env var is entirely
+# unset. Jobs that don't otherwise need Supabase/DB access get this
+# placeholder; build/e2e-test override it with the real secret.
+env:
+  DIRECT_URL: "postgresql://placeholder:placeholder@localhost:5432/placeholder"
+
 jobs:
   lint:
     runs-on: ubuntu-latest
@@ -62,6 +70,14 @@ jobs:
 
   build:
     runs-on: ubuntu-latest
+    env:
+      DATABASE_URL: ${{ secrets.DATABASE_URL }}
+      DIRECT_URL: ${{ secrets.DIRECT_URL }}
+      NEXT_PUBLIC_SUPABASE_URL: ${{ secrets.NEXT_PUBLIC_SUPABASE_URL }}
+      NEXT_PUBLIC_SUPABASE_ANON_KEY: ${{ secrets.NEXT_PUBLIC_SUPABASE_ANON_KEY }}
+      SUPABASE_SECRET_KEY: ${{ secrets.SUPABASE_SECRET_KEY }}
+      AGENT_SERVICE_INTERNAL_KEY: ${{ secrets.AGENT_SERVICE_INTERNAL_KEY }}
+      AGENT_SERVICE_URL: ${{ secrets.AGENT_SERVICE_URL }}
     steps:
       - uses: actions/checkout@v4
       - uses: pnpm/action-setup@v4
@@ -74,14 +90,6 @@ jobs:
           cache-dependency-path: frontend/pnpm-lock.yaml
       - run: pnpm install --frozen-lockfile
       - run: pnpm build
-        env:
-          DATABASE_URL: ${{ secrets.DATABASE_URL }}
-          DIRECT_URL: ${{ secrets.DIRECT_URL }}
-          NEXT_PUBLIC_SUPABASE_URL: ${{ secrets.NEXT_PUBLIC_SUPABASE_URL }}
-          NEXT_PUBLIC_SUPABASE_ANON_KEY: ${{ secrets.NEXT_PUBLIC_SUPABASE_ANON_KEY }}
-          SUPABASE_SECRET_KEY: ${{ secrets.SUPABASE_SECRET_KEY }}
-          AGENT_SERVICE_INTERNAL_KEY: ${{ secrets.AGENT_SERVICE_INTERNAL_KEY }}
-          AGENT_SERVICE_URL: ${{ secrets.AGENT_SERVICE_URL }}
 
   # Hits a live Supabase project/DB (no isolated staging environment exists
   # yet) — kept non-blocking via continue-on-error so a flaky live-infra
@@ -89,6 +97,16 @@ jobs:
   e2e-test:
     runs-on: ubuntu-latest
     continue-on-error: true
+    env:
+      DATABASE_URL: ${{ secrets.DATABASE_URL }}
+      DIRECT_URL: ${{ secrets.DIRECT_URL }}
+      NEXT_PUBLIC_SUPABASE_URL: ${{ secrets.NEXT_PUBLIC_SUPABASE_URL }}
+      NEXT_PUBLIC_SUPABASE_ANON_KEY: ${{ secrets.NEXT_PUBLIC_SUPABASE_ANON_KEY }}
+      SUPABASE_SECRET_KEY: ${{ secrets.SUPABASE_SECRET_KEY }}
+      AGENT_SERVICE_INTERNAL_KEY: ${{ secrets.AGENT_SERVICE_INTERNAL_KEY }}
+      AGENT_SERVICE_URL: ${{ secrets.AGENT_SERVICE_URL }}
+      PW: ${{ secrets.PW }}
+      CI: true
     steps:
       - uses: actions/checkout@v4
       - uses: pnpm/action-setup@v4
@@ -102,16 +120,6 @@ jobs:
       - run: pnpm install --frozen-lockfile
       - run: npx playwright install --with-deps chromium
       - run: pnpm test:e2e
-        env:
-          DATABASE_URL: ${{ secrets.DATABASE_URL }}
-          DIRECT_URL: ${{ secrets.DIRECT_URL }}
-          NEXT_PUBLIC_SUPABASE_URL: ${{ secrets.NEXT_PUBLIC_SUPABASE_URL }}
-          NEXT_PUBLIC_SUPABASE_ANON_KEY: ${{ secrets.NEXT_PUBLIC_SUPABASE_ANON_KEY }}
-          SUPABASE_SECRET_KEY: ${{ secrets.SUPABASE_SECRET_KEY }}
-          AGENT_SERVICE_INTERNAL_KEY: ${{ secrets.AGENT_SERVICE_INTERNAL_KEY }}
-          AGENT_SERVICE_URL: ${{ secrets.AGENT_SERVICE_URL }}
-          PW: ${{ secrets.PW }}
-          CI: true
       - uses: actions/upload-artifact@v4
         if: failure()
         with:
