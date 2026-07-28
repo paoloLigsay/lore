@@ -41,7 +41,7 @@ export function DeleteLoreDialog({
         <ModalHeader>
           <ModalTitle>Delete Lore?</ModalTitle>
           <ModalDescription>
-            This will permanently delete "{lore.title}" and all its notes and
+            This will permanently delete &ldquo;{lore.title}&rdquo; and all its notes and
             sources. This action cannot be undone.
           </ModalDescription>
         </ModalHeader>

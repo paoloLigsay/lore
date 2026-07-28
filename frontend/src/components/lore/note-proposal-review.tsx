@@ -99,7 +99,7 @@ export function NoteProposalReview({
           type="button"
           disabled={isPending}
           onClick={() => acceptProposal.mutate(proposal.id, { onSuccess: onAccepted })}
-          className="rounded-lg bg-accent px-4 py-1.5 text-center text-[12.5px] font-bold text-accent-foreground transition-opacity disabled:opacity-50"
+          className="rounded-lg bg-accent-strong px-4 py-1.5 text-center text-[12.5px] font-bold text-accent-foreground transition-opacity disabled:opacity-50"
         >
           {acceptProposal.isPending ? "Accepting…" : "Accept"}
         </button>

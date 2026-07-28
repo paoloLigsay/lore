@@ -72,3 +72,12 @@ summarizes:
 - Global engineering conventions (error handling, naming, no premature
   abstraction, etc.) live in the user's global `CLAUDE.md` and apply here
   without repeating them.
+
+## Workflow
+- Never run git commands that change state: add, commit, push, merge,
+  rebase, reset, checkout that discards changes, branch/tag deletion, etc.
+  This applies even if it seems implied by the task — always just print the
+  exact command(s) for me to run myself instead of executing them.
+- Read-only git commands (status, diff, log, show, branch listing) and
+  running tests are fine to run directly — no need to ask first.
+- Ask before deleting files or making other destructive changes outside git.
