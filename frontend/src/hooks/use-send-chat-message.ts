@@ -12,14 +12,17 @@ async function sendChatMessage(
   chatId: string,
   input: SendChatMessageInput
 ): Promise<{ message: string }> {
+  console.log("[sendChatMessage] Starting message send:", input.message);
   const res = await fetch(`/api/chats/${chatId}/messages`, {
     method: "POST",
     headers: { "Content-Type": "application/json" },
     body: JSON.stringify({ message: input.message }),
   });
 
+  console.log("[sendChatMessage] Response status:", res.status, "ok:", res.ok, "has body:", !!res.body);
   if (!res.ok || !res.body) {
     const data = await res.json().catch(() => null);
+    console.log("[sendChatMessage] Error response:", data);
     throw new Error(data?.error ?? "Failed to send message");
   }
 
@@ -30,7 +33,10 @@ async function sendChatMessage(
 
   while (true) {
     const { done, value } = await reader.read();
-    if (done) break;
+    if (done) {
+      console.log("[sendChatMessage] Stream done. Final message:", finalMessage?.substring(0, 50));
+      break;
+    }
     buffer += decoder.decode(value, { stream: true });
 
     let separatorIndex;
@@ -44,6 +50,7 @@ async function sendChatMessage(
 
       const data = JSON.parse(dataLine.slice("data: ".length));
       const event = eventLine?.slice("event: ".length);
+      console.log("[sendChatMessage] Stream event:", event);
 
       if (event === "token") {
         input.onToken?.(data.text);
@@ -51,11 +58,13 @@ async function sendChatMessage(
         input.onStatus?.(data.label);
       } else if (event === "result") {
         finalMessage = data.message;
+        console.log("[sendChatMessage] Result received, message length:", finalMessage?.length);
       }
     }
   }
 
   if (finalMessage === null) {
+    console.log("[sendChatMessage] ERROR: Chat stream ended without a response");
     throw new Error("Chat stream ended without a response");
   }
 

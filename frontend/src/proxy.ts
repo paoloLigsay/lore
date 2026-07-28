@@ -4,6 +4,23 @@ import { NextResponse, type NextRequest } from "next/server";
 const PROTECTED_PREFIXES = ["/dashboard"];
 
 export async function proxy(request: NextRequest) {
+  const { pathname } = request.nextUrl;
+
+  // Internal service requests use X-Internal-Key instead of Supabase auth
+  const internalKey = request.headers.get("x-internal-key");
+  console.log("[PROXY] Request path:", pathname);
+  if (pathname.startsWith("/api/internal")) {
+    console.log("[PROXY] Internal API request detected");
+    console.log("[PROXY] Internal key from header:", internalKey ? "present" : "missing");
+    console.log("[PROXY] Expected key:", process.env.AGENT_SERVICE_INTERNAL_KEY ? "present" : "missing");
+    if (!internalKey || internalKey !== process.env.AGENT_SERVICE_INTERNAL_KEY) {
+      console.log("[PROXY] Internal key validation failed");
+      return NextResponse.json({ error: "Not authorized" }, { status: 401 });
+    }
+    console.log("[PROXY] Internal key validation passed, allowing request");
+    return NextResponse.next({ request });
+  }
+
   let response = NextResponse.next({ request });
 
   const supabase = createServerClient(
@@ -34,7 +51,6 @@ export async function proxy(request: NextRequest) {
     data: { user },
   } = await supabase.auth.getUser();
 
-  const { pathname } = request.nextUrl;
   const isProtected = PROTECTED_PREFIXES.some(
     (prefix) => pathname === prefix || pathname.startsWith(`${prefix}/`)
   );

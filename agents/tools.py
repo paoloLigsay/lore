@@ -15,14 +15,16 @@ def _internal_get(path: str, params: dict) -> dict:
     # error handler only catches its own validation errors, so this has to
     # be handled here.
     try:
+        full_url = f"{_INTERNAL_BASE_URL}{path}"
         response = httpx.get(
-            f"{_INTERNAL_BASE_URL}{path}",
+            full_url,
             params=params,
             headers={"X-Internal-Key": _INTERNAL_KEY},
             timeout=10.0,
         )
         response.raise_for_status()
-        return response.json()
+        result = response.json()
+        return result
     except httpx.HTTPStatusError as exc:
         if exc.response.status_code == 404:
             return {

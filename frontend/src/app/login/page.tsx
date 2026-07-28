@@ -41,6 +41,16 @@ export default async function LoginPage({
         <div className="rounded-2xl border border-border bg-card p-6 shadow-[0_6px_18px_-10px_rgba(0,0,0,0.15)]">
           <LoginForm redirectTo={redirectTo} />
         </div>
+
+        <p className="mt-6 text-center text-sm text-muted-foreground">
+          Don&apos;t have an account?{" "}
+          <a
+            href="mailto:paolomartinligsay@gmail.com"
+            className="font-medium text-foreground underline underline-offset-2 hover:text-primary"
+          >
+            Contact Paolo Ligsay
+          </a>
+        </p>
       </div>
     </div>
   );

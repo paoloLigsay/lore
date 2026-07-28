@@ -54,13 +54,14 @@ class DraftedChange(BaseModel):
         "new note rather than editing an existing one."
     )
     diff_before: str = Field(
-        description="The exact existing text in the note being replaced. Empty "
-        "string if this adds new content rather than replacing anything, or "
-        "if note_id is null (a new note has no existing text)."
+        description="The FULL existing content of the note (when note_id is set). "
+        "Empty string only when note_id is null (proposing a brand new note). "
+        "This is the complete current text, not just the part being changed."
     )
     diff_after: str = Field(
-        description="The proposed replacement text, or the full content of "
-        "the new note when note_id is null."
+        description="The FULL proposed content of the note after the change. "
+        "When note_id is null (new note), this is the complete new content. "
+        "When note_id is set (editing), this is the full content with all changes applied."
     )
     explanation: str = Field(
         description="A short, plain-language explanation of what changed and why, "
@@ -97,11 +98,11 @@ You are the RAG specialist inside Lore. Given an instruction from the \
 Supervisor, draft one change to a note (or a brand new note) grounded in \
 this Lore's own notes and uploaded sources — never generic knowledge.
 
-Use list_notes/get_note to find the target note and its current content \
-(you need the exact existing text for diff_before). Use list_sources/get_source \
-to find the grounding content for the change. If the sources don't actually \
-cover what's needed, say so in your explanation rather than inventing \
-content."""
+Use list_notes/get_note to find the target note. For diff_before, put the \
+note's FULL current content (not just the part changing). For diff_after, \
+put the FULL new content after your proposed change. Use list_sources/get_source \
+to find the grounding content. If sources don't cover what's needed, say so \
+in your explanation rather than inventing content."""
 )
 
 _WEB_PROMPT = (
@@ -113,10 +114,10 @@ Supervisor, draft one change to a note (or a brand new note) grounded in a \
 live web search — used when this Lore's own notes/sources don't cover the \
 request.
 
-Use list_notes/get_note to find the target note and its current content \
-(you need the exact existing text for diff_before). Use the search tool to \
-find grounding content for the change, and cite what you found in your \
-explanation."""
+Use list_notes/get_note to find the target note. For diff_before, put the \
+note's FULL current content (not just the part changing). For diff_after, \
+put the FULL new content after your proposed change. Use the search tool to \
+find grounding content, and cite what you found in your explanation."""
 )
 
 _SYNTHESIZER_PROMPT = """\

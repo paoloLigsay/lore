@@ -63,6 +63,7 @@ export async function POST(
   { params }: { params: Promise<{ id: string }> }
 ) {
   const { id } = await params;
+
   const supabase = await createClient();
   const {
     data: { user },
@@ -73,7 +74,9 @@ export async function POST(
   }
 
   const { chat, error } = await loadChatForUser(id, user.id);
-  if (error) return error;
+  if (error) {
+    return error;
+  }
 
   const body = await request.json().catch(() => null);
   const message = typeof body?.message === "string" ? body.message.trim() : "";
@@ -167,7 +170,8 @@ export async function POST(
         const lines = frame.split("\n");
         const eventLine = lines.find((line) => line.startsWith("event: "));
         const dataLine = lines.find((line) => line.startsWith("data: "));
-        if (eventLine?.slice("event: ".length) === "result" && dataLine) {
+        const event = eventLine?.slice("event: ".length);
+        if (event === "result" && dataLine) {
           const parsed = JSON.parse(dataLine.slice("data: ".length));
           finalMessage = parsed.message;
           proposal = parsed.proposal;
