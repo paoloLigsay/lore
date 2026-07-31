@@ -14,24 +14,36 @@ def _internal_get(path: str, params: dict) -> dict:
     # not an exception that takes down the whole turn. ToolNode's default
     # error handler only catches its own validation errors, so this has to
     # be handled here.
+    print(f"[TOOLS] _internal_get called: path={path}, params={params}")
     try:
         full_url = f"{_INTERNAL_BASE_URL}{path}"
+        print(f"[TOOLS] Full URL: {full_url}")
+        print(f"[TOOLS] Internal URL: {_INTERNAL_BASE_URL}")
+        print(f"[TOOLS] Key present: {bool(_INTERNAL_KEY)}")
+
         response = httpx.get(
             full_url,
             params=params,
             headers={"X-Internal-Key": _INTERNAL_KEY},
             timeout=10.0,
         )
+        print(f"[TOOLS] Response status: {response.status_code}")
         response.raise_for_status()
         result = response.json()
+        print(f"[TOOLS] Response body keys: {list(result.keys()) if isinstance(result, dict) else 'not-dict'}")
         return result
     except httpx.HTTPStatusError as exc:
+        print(f"[TOOLS] HTTPStatusError: {exc.response.status_code}")
+        print(f"[TOOLS] Response text: {exc.response.text[:200]}")
         if exc.response.status_code == 404:
             return {
                 "error": "Not found. The id argument must be exactly the "
                 "`id` field from list_notes/list_sources — never the title. "
                 "Call list_notes/list_sources again if you're unsure of it."
             }
+        raise
+    except Exception as e:
+        print(f"[TOOLS] Exception in _internal_get: {type(e).__name__}: {str(e)}")
         raise
 
 

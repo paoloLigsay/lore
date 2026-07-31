@@ -155,6 +155,7 @@ def _run_specialist(
     with it, the user sees what it's actually doing (reading a note,
     searching the web, drafting) while it runs.
     """
+    print(f"[SPECIALIST] Starting specialist with instruction: {instruction[:50]}...")
     last_label: str | None = None
 
     def emit(label: str) -> None:
@@ -167,11 +168,15 @@ def _run_specialist(
         {"messages": [HumanMessage(content=instruction)]}, stream_mode="updates"
     ):
         node_name, node_output = next(iter(update.items()))
+        print(f"[SPECIALIST] Node: {node_name}")
         if node_name == "generate_structured_response":
-            return node_output["structured_response"]
+            result = node_output["structured_response"]
+            print(f"[SPECIALIST] Got structured response: note_id={result.note_id}")
+            return result
         if node_name != "agent":
             continue
         tool_calls = node_output["messages"][-1].tool_calls
+        print(f"[SPECIALIST] Tool calls: {[c.get('name') for c in tool_calls] if tool_calls else 'none'}")
         if not tool_calls:
             emit(_DRAFTING_LABEL)
             continue
@@ -226,11 +231,22 @@ def build_graph(model: ChatAnthropic, lore_tools: LoreTools) -> CompiledStateGra
     bound_model = model.bind_tools(supervisor_tools)
 
     def supervisor(state: TurnState) -> dict:
+        print(f"[GRAPH] Supervisor node invoked, messages: {len(state['messages'])}")
         response = bound_model.invoke(state["messages"])
+        if hasattr(response, 'tool_calls') and response.tool_calls:
+            print(f"[GRAPH] Supervisor chose tools: {[tc.get('name') for tc in response.tool_calls]}")
+        else:
+            print(f"[GRAPH] Supervisor chose to not use tools, will go to synthesizer")
         return {"messages": [response]}
 
     def synthesizer(state: TurnState) -> dict:
+        print(f"[GRAPH] Synthesizer node invoked, messages: {len(state['messages'])}")
         draft = _latest_draft(state["messages"])
+        print(f"[GRAPH] Found draft: {draft is not None}")
+        if draft:
+            agent, change = draft
+            print(f"[GRAPH] Draft details - agent: {agent}, note_id: {change.note_id}")
+
         # The conversation so far ends on the Supervisor's own AIMessage —
         # invoking the model on that as-is makes Claude treat it as a
         # continuation prompt (and often emit nothing new), not a fresh
@@ -247,6 +263,7 @@ def build_graph(model: ChatAnthropic, lore_tools: LoreTools) -> CompiledStateGra
                 ),
             ]
         )
+        print(f"[GRAPH] Synthesizer response length: {len(response.text)}")
         update: dict = {"messages": [response]}
         if draft is not None:
             agent, change = draft
@@ -258,6 +275,7 @@ def build_graph(model: ChatAnthropic, lore_tools: LoreTools) -> CompiledStateGra
                 "diff_after": change.diff_after,
                 "explanation": response.text,
             }
+            print(f"[GRAPH] Proposal created for agent: {agent}")
         return update
 
     # handle_tool_errors=True: an unhandled tool exception (network hiccup,

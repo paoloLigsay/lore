@@ -119,8 +119,16 @@ def _extract_text_delta(content: str | list) -> str:
 
 
 async def _stream_turn(payload: TurnRequest) -> AsyncIterator[str]:
+    print(f"[AGENT] ========== TURN START ==========")
+    print(f"[AGENT] Lore ID: {payload.lore_id}")
+    print(f"[AGENT] User message: {payload.user_message}")
+    print(f"[AGENT] Chat history length: {len(payload.chat_history)}")
+
     lore_tools = build_lore_tools(payload.lore_id)
+    print(f"[AGENT] Tools built")
+
     graph = build_graph(_model, lore_tools)
+    print(f"[AGENT] Graph built successfully")
 
     chunks: list[str] = []
     proposal: dict | None = None
@@ -189,6 +197,11 @@ async def _stream_turn(payload: TurnRequest) -> AsyncIterator[str]:
         yield f"event: token\ndata: {json.dumps({'text': text})}\n\n"
 
     result = {"message": "".join(chunks), "proposal": proposal}
+    print(f"[AGENT] Message length: {len(result['message'])}")
+    print(f"[AGENT] Has proposal: {result['proposal'] is not None}")
+    if result['proposal']:
+        print(f"[AGENT] Proposal - note_id: {result['proposal'].get('note_id')}, agent: {result['proposal'].get('agent')}")
+    print(f"[AGENT] ========== TURN END ==========")
     yield f"event: result\ndata: {json.dumps(result)}\n\n"
 
 
