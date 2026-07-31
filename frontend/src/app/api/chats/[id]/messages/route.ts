@@ -103,20 +103,27 @@ export async function POST(
   // Notes and sources aren't sent here — the agent fetches them on demand
   // via its list_notes/get_note/list_sources/get_source tools (see
   // /api/internal/*), so a turn's prompt only ever pays for what it uses.
-  const agentResponse = await fetch(`${process.env.AGENT_SERVICE_URL}/agents/turn`, {
-    method: "POST",
-    headers: { "Content-Type": "application/json" },
-    body: JSON.stringify({
-      lore_id: chat.loreId,
-      chat_history: history.map((entry) => ({
-        role: entry.role === "USER" ? "user" : "assistant",
-        content: entry.content,
-      })),
-      user_message: message,
-    }),
-  });
+  let agentResponse: Response;
+  try {
+    agentResponse = await fetch(`${process.env.AGENT_SERVICE_URL}/agents/turn`, {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({
+        lore_id: chat.loreId,
+        chat_history: history.map((entry) => ({
+          role: entry.role === "USER" ? "user" : "assistant",
+          content: entry.content,
+        })),
+        user_message: message,
+      }),
+    });
+  } catch (err) {
+    console.error("Agent service fetch failed:", err);
+    return NextResponse.json({ error: "Agent service unavailable", details: String(err) }, { status: 502 });
+  }
 
   if (!agentResponse.ok || !agentResponse.body) {
+    console.error("Agent service error:", agentResponse.status, agentResponse.statusText);
     return NextResponse.json({ error: "Agent service unavailable" }, { status: 502 });
   }
 
